@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <com.example.mgbalink.EmulatorView
+        android:id="@+id/emulatorView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.example.mgbalink.TouchControlsView
+        android:id="@+id/touchControlsView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <Button
+            android:id="@+id/btnLoadRom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.7"
+            android:text="@string/load_rom" />
+
+        <Button
+            android:id="@+id/btnDolphinLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.7"
+            android:text="@string/dolphin_link" />
+    </LinearLayout>
+
+</FrameLayout>
