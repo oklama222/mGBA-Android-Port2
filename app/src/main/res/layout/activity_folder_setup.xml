@@ -1,72 +1,159 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1a1a2e"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="32dp">
+    android:background="#1a1a2e">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/setup_title"
-        android:textColor="#ffffff"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/setup_subtitle"
-        android:textColor="#aaaaaa"
-        android:textSize="14sp"
-        android:gravity="center"
-        android:layout_marginBottom="40dp" />
-
-    <!-- ROM folder card -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#2a2a3e"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:layout_marginBottom="24dp">
+        android:padding="32dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/setup_rom_folder_label"
-            android:textColor="#aaaaaa"
-            android:textSize="12sp"
-            android:layout_marginBottom="6dp" />
+            android:text="@string/setup_title"
+            android:textColor="#ffffff"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
 
         <TextView
-            android:id="@+id/tvRomFolderPath"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/setup_subtitle"
+            android:textColor="#aaaaaa"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Step 1: ROM folder (always visible) -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/setup_no_folder"
-            android:textColor="#ffffff"
-            android:textSize="14sp"
-            android:layout_marginBottom="12dp"
-            android:ellipsize="start"
-            android:singleLine="true" />
+            android:text="@string/setup_step1"
+            android:textColor="#4a90d9"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#2a2a3e"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/setup_rom_folder_label"
+                android:textColor="#aaaaaa"
+                android:textSize="12sp"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvRomFolderPath"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/setup_no_folder"
+                android:textColor="#ffffff"
+                android:textSize="14sp"
+                android:ellipsize="start"
+                android:singleLine="true"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/btnPickRomFolder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/setup_pick_rom_folder"
+                android:backgroundTint="#4a90d9" />
+        </LinearLayout>
+
+        <!-- Step 2: Save folder (hidden until ROM folder is chosen) -->
+        <LinearLayout
+            android:id="@+id/cardSaveFolder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/setup_step2"
+                android:textColor="#4a90d9"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#2a2a3e"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setup_save_folder_label"
+                    android:textColor="#aaaaaa"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setup_save_folder_hint"
+                    android:textColor="#777777"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:id="@+id/tvSaveFolderPath"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setup_no_folder"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    android:ellipsize="start"
+                    android:singleLine="true"
+                    android:layout_marginBottom="12dp" />
+
+                <Button
+                    android:id="@+id/btnPickSaveFolder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setup_pick_save_folder"
+                    android:backgroundTint="#4a90d9" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/setup_save_skip_note"
+                android:textColor="#666666"
+                android:textSize="11sp"
+                android:gravity="center"
+                android:layout_marginBottom="24dp" />
+
+        </LinearLayout>
 
         <Button
-            android:id="@+id/btnPickRomFolder"
+            android:id="@+id/btnSetupDone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/setup_pick_rom_folder"
-            android:backgroundTint="#4a90d9" />
+            android:text="@string/setup_done"
+            android:textSize="16sp"
+            android:backgroundTint="#27ae60" />
+
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnSetupDone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/setup_done"
-        android:textSize="16sp"
-        android:backgroundTint="#27ae60" />
-
-</LinearLayout>
+</ScrollView>

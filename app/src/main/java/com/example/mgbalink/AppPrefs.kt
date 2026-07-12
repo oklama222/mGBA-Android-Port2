@@ -9,6 +9,7 @@ object AppPrefs {
     private const val NAME = "mgba_prefs"
 
     private const val KEY_ROM_FOLDER    = "rom_folder_uri"
+    private const val KEY_SAVE_FOLDER   = "save_folder_uri"
 
     // Video
     private const val KEY_STRETCH       = "stretch_to_fit"
@@ -30,6 +31,13 @@ object AppPrefs {
 
     fun setRomFolderUri(ctx: Context, uri: Uri) {
         prefs(ctx).edit().putString(KEY_ROM_FOLDER, uri.toString()).apply()
+    }
+
+    fun getSaveFolderUri(ctx: Context): Uri? =
+        prefs(ctx).getString(KEY_SAVE_FOLDER, null)?.let { Uri.parse(it) }
+
+    fun setSaveFolderUri(ctx: Context, uri: Uri) {
+        prefs(ctx).edit().putString(KEY_SAVE_FOLDER, uri.toString()).apply()
     }
 
     fun isSetupDone(ctx: Context) = getRomFolderUri(ctx) != null

@@ -3,23 +3,37 @@ package com.example.mgbalink
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.documentfile.provider.DocumentFile
+import java.io.File
+import java.security.MessageDigest
 
 /**
- * The emulator screen. Launched by LibraryActivity with EXTRA_ROM_URI containing
- * the DocumentFile URI of the ROM to load. Screen orientation and display settings
- * are read from AppPrefs each time the activity starts.
+ * The emulator screen. Launched by LibraryActivity with EXTRA_ROM_URI.
+ *
+ * Save-file sync (copy-in / copy-out):
+ *  Before loading — if the user has a save folder configured, we look for
+ *  "<romBaseName>.sav" in that folder and copy it to internal storage so the
+ *  native side can read/write it via a real file path.
+ *  After stopping  — we copy the (updated) internal save file back to the
+ *  user's save folder, creating the file there if it doesn't exist yet.
  */
 class MainActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_ROM_URI = "rom_uri"
+        private const val TAG   = "MainActivity"
     }
 
-    private lateinit var emulatorView: EmulatorView
+    private lateinit var emulatorView:  EmulatorView
     private lateinit var touchControls: TouchControlsView
     private var emulatorCore: EmulatorCore? = null
+
+    /** Tracks the internal save path and ROM base name for the copy-out step. */
+    private var currentSaveLocalPath: String? = null
+    private var currentRomBaseName:   String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,23 +43,16 @@ class MainActivity : AppCompatActivity() {
         touchControls = findViewById(R.id.touchControlsView)
 
         applyOrientation()
-
-        // Apply the virtual-gamepad layout chosen in Settings.
         touchControls.setLayout(AppPrefs.getLayout(this))
 
-        // Back to library.
         findViewById<android.widget.Button>(R.id.btnBackToLibrary).setOnClickListener {
-            emulatorCore?.stop()
-            emulatorCore = null
+            stopEmulator()
             finish()
         }
-
-        // Dolphin Link — keep same as before.
         findViewById<android.widget.Button>(R.id.btnDolphinLink).setOnClickListener {
             DolphinLinkDialog.show(this)
         }
 
-        // Load the ROM that LibraryActivity passed us.
         val uriString = intent.getStringExtra(EXTRA_ROM_URI)
         if (uriString != null) {
             loadRom(Uri.parse(uriString))
@@ -55,22 +62,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ── ROM loading ──────────────────────────────────────────────────────────
+
     private fun loadRom(uri: Uri) {
         val bytes = try {
             contentResolver.openInputStream(uri)?.use { it.readBytes() }
-        } catch (e: Exception) {
-            null
-        }
+        } catch (e: Exception) { null }
+
         if (bytes == null) {
             Toast.makeText(this, "Couldn't read that ROM file", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
-        val savePath = savePathFor(uri, bytes)
+        val baseName  = romBaseName(uri, bytes)
+        val savePath  = prepareSavePath(baseName)
 
-        emulatorCore?.stop()
-        emulatorCore = null
+        currentRomBaseName   = baseName
+        currentSaveLocalPath = savePath
+
+        stopEmulator() // stop anything currently running
 
         val loaded = NativeBridge.nativeLoadRom(bytes, savePath)
         if (!loaded) {
@@ -79,7 +90,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Apply video settings.
         emulatorView.stretchToFit = AppPrefs.getStretch(this)
 
         val core = EmulatorCore(
@@ -91,17 +101,88 @@ class MainActivity : AppCompatActivity() {
         core.start()
     }
 
-    /** Save file lives in internal storage, named after the ROM. */
-    private fun savePathFor(uri: Uri, bytes: ByteArray): String {
-        val displayName = queryDisplayName(uri)
-        val baseName = if (displayName != null) {
-            displayName.substringBeforeLast('.').replace(Regex("[^A-Za-z0-9_-]"), "_")
-        } else {
-            val digest = java.security.MessageDigest.getInstance("SHA-256").digest(bytes)
-            digest.joinToString("") { "%02x".format(it) }.take(16)
+    // ── Save-file sync ───────────────────────────────────────────────────────
+
+    /**
+     * Returns the absolute path the native side should use for the save file.
+     * If a SAF save folder is configured, copies any existing save from there
+     * into internal storage first.
+     */
+    private fun prepareSavePath(baseName: String): String {
+        val localFile = localSaveFile(baseName)
+
+        val saveFolderUri = AppPrefs.getSaveFolderUri(this) ?: return localFile.absolutePath
+        val saveFolder    = DocumentFile.fromTreeUri(this, saveFolderUri)
+            ?: return localFile.absolutePath
+
+        // Look for an existing save file in the user's folder.
+        val existing = saveFolder.listFiles()
+            .firstOrNull { it.name?.equals("$baseName.sav", ignoreCase = true) == true }
+
+        if (existing != null) {
+            try {
+                contentResolver.openInputStream(existing.uri)?.use { input ->
+                    localFile.outputStream().use { output -> input.copyTo(output) }
+                }
+                Log.d(TAG, "Copied save in: ${existing.name}")
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not copy save in", e)
+            }
         }
-        val savesDir = java.io.File(filesDir, "saves").apply { mkdirs() }
-        return java.io.File(savesDir, "$baseName.sav").absolutePath
+
+        return localFile.absolutePath
+    }
+
+    /**
+     * Copies the internal save file back to the user's save folder after the
+     * emulator has flushed it. No-op if no save folder is configured or the
+     * save file is empty.
+     */
+    private fun flushSaveToFolder(baseName: String, localPath: String) {
+        val localFile = File(localPath)
+        if (!localFile.exists() || localFile.length() == 0L) return
+
+        val saveFolderUri = AppPrefs.getSaveFolderUri(this) ?: return
+        val saveFolder    = DocumentFile.fromTreeUri(this, saveFolderUri) ?: return
+
+        val saveName = "$baseName.sav"
+        // Find or create the file in the SAF folder.
+        val target = saveFolder.listFiles()
+            .firstOrNull { it.name?.equals(saveName, ignoreCase = true) == true }
+            ?: saveFolder.createFile("application/octet-stream", baseName)
+
+        if (target == null) {
+            Log.w(TAG, "Could not create save file in SAF folder")
+            return
+        }
+
+        try {
+            // "wt" = write-truncate so we overwrite the old content cleanly.
+            contentResolver.openOutputStream(target.uri, "wt")?.use { output ->
+                localFile.inputStream().use { input -> input.copyTo(output) }
+            }
+            Log.d(TAG, "Flushed save out: $saveName")
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not copy save out", e)
+        }
+    }
+
+    private fun localSaveFile(baseName: String): File {
+        val dir = File(filesDir, "saves").apply { mkdirs() }
+        return File(dir, "$baseName.sav")
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** Returns a safe file-system base name for the ROM (no extension). */
+    private fun romBaseName(uri: Uri, bytes: ByteArray): String {
+        val displayName = queryDisplayName(uri)
+        return if (displayName != null) {
+            displayName.substringBeforeLast('.').replace(Regex("[^A-Za-z0-9_()\\- ]"), "_").trim()
+        } else {
+            MessageDigest.getInstance("SHA-256").digest(bytes)
+                .joinToString("") { "%02x".format(it) }.take(16)
+        }
     }
 
     private fun queryDisplayName(uri: Uri): String? {
@@ -131,19 +212,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        emulatorCore?.pause()
-    }
+    // ── Lifecycle ────────────────────────────────────────────────────────────
 
-    override fun onResume() {
-        super.onResume()
-        emulatorCore?.resume()
-    }
+    private fun stopEmulator() {
+        val core     = emulatorCore ?: return
+        val baseName = currentRomBaseName
+        val savePath = currentSaveLocalPath
 
-    override fun onDestroy() {
-        emulatorCore?.stop()
+        core.stop()
         emulatorCore = null
-        super.onDestroy()
+
+        // After nativeUnloadRom() the save file has been flushed to localPath.
+        if (baseName != null && savePath != null) {
+            flushSaveToFolder(baseName, savePath)
+        }
     }
+
+    override fun onPause()   { super.onPause();   emulatorCore?.pause() }
+    override fun onResume()  { super.onResume();  emulatorCore?.resume() }
+    override fun onDestroy() { stopEmulator();    super.onDestroy() }
 }

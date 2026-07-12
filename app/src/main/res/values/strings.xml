@@ -12,10 +12,16 @@
 
     <!-- Folder setup -->
     <string name="setup_title">Welcome to mGBA Link</string>
-    <string name="setup_subtitle">Choose the folder where your GBA ROM files are stored.\nSave files are managed automatically.</string>
+    <string name="setup_subtitle">Choose your ROM folder, then optionally your save-file folder.</string>
+    <string name="setup_step1">STEP 1 — ROM FOLDER (required)</string>
+    <string name="setup_step2">STEP 2 — SAVE FILE FOLDER (optional)</string>
     <string name="setup_rom_folder_label">ROM FOLDER</string>
+    <string name="setup_save_folder_label">SAVE FILE FOLDER</string>
+    <string name="setup_save_folder_hint">Save files must be named exactly like the ROM (e.g. Pokemon.gba → Pokemon.sav)</string>
     <string name="setup_no_folder">No folder selected</string>
     <string name="setup_pick_rom_folder">Browse…</string>
+    <string name="setup_pick_save_folder">Browse…</string>
+    <string name="setup_save_skip_note">You can skip this — saves will be kept inside the app instead.</string>
     <string name="setup_done">Done</string>
 
     <!-- Library -->
