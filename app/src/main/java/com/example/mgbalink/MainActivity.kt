@@ -1,35 +1,57 @@
 package com.example.mgbalink
 
-import android.database.Cursor
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
-import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.activity.result.contract.ActivityResultContracts
-import java.io.File
-import java.security.MessageDigest
 
+/**
+ * The emulator screen. Launched by LibraryActivity with EXTRA_ROM_URI containing
+ * the DocumentFile URI of the ROM to load. Screen orientation and display settings
+ * are read from AppPrefs each time the activity starts.
+ */
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var emulatorView: EmulatorView
-    private var emulatorCore: EmulatorCore? = null
-
-    private val pickRom = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) loadRom(uri)
+    companion object {
+        const val EXTRA_ROM_URI = "rom_uri"
     }
+
+    private lateinit var emulatorView: EmulatorView
+    private lateinit var touchControls: TouchControlsView
+    private var emulatorCore: EmulatorCore? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        emulatorView = findViewById(R.id.emulatorView)
+        emulatorView  = findViewById(R.id.emulatorView)
+        touchControls = findViewById(R.id.touchControlsView)
 
-        findViewById<android.widget.Button>(R.id.btnLoadRom).setOnClickListener {
-            pickRom.launch(arrayOf("*/*"))
+        applyOrientation()
+
+        // Apply the virtual-gamepad layout chosen in Settings.
+        touchControls.setLayout(AppPrefs.getLayout(this))
+
+        // Back to library.
+        findViewById<android.widget.Button>(R.id.btnBackToLibrary).setOnClickListener {
+            emulatorCore?.stop()
+            emulatorCore = null
+            finish()
         }
+
+        // Dolphin Link — keep same as before.
         findViewById<android.widget.Button>(R.id.btnDolphinLink).setOnClickListener {
             DolphinLinkDialog.show(this)
+        }
+
+        // Load the ROM that LibraryActivity passed us.
+        val uriString = intent.getStringExtra(EXTRA_ROM_URI)
+        if (uriString != null) {
+            loadRom(Uri.parse(uriString))
+        } else {
+            Toast.makeText(this, "No ROM specified", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
@@ -40,54 +62,73 @@ class MainActivity : AppCompatActivity() {
             null
         }
         if (bytes == null) {
-            Toast.makeText(this, "Couldn't read that file", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Couldn't read that ROM file", Toast.LENGTH_SHORT).show()
+            finish()
             return
         }
 
         val savePath = savePathFor(uri, bytes)
 
-        // Stop whatever's currently running (this also flushes/closes its save file).
         emulatorCore?.stop()
         emulatorCore = null
 
         val loaded = NativeBridge.nativeLoadRom(bytes, savePath)
         if (!loaded) {
-            Toast.makeText(this, "Couldn't load that ROM (GBA ROMs only in this build)", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Couldn't load ROM (GBA ROMs only)", Toast.LENGTH_LONG).show()
+            finish()
             return
         }
 
-        val core = EmulatorCore(emulatorView)
+        // Apply video settings.
+        emulatorView.stretchToFit = AppPrefs.getStretch(this)
+
+        val core = EmulatorCore(
+            emulatorView = emulatorView,
+            maxFrameSkip = AppPrefs.getFrameSkip(this),
+            soundEnabled = AppPrefs.getSoundEnabled(this)
+        )
         emulatorCore = core
         core.start()
     }
 
-    /** One save file per ROM, named after the ROM's display name (falling back to a content hash). */
+    /** Save file lives in internal storage, named after the ROM. */
     private fun savePathFor(uri: Uri, bytes: ByteArray): String {
         val displayName = queryDisplayName(uri)
         val baseName = if (displayName != null) {
             displayName.substringBeforeLast('.').replace(Regex("[^A-Za-z0-9_-]"), "_")
         } else {
-            val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+            val digest = java.security.MessageDigest.getInstance("SHA-256").digest(bytes)
             digest.joinToString("") { "%02x".format(it) }.take(16)
         }
-        val savesDir = File(filesDir, "saves").apply { mkdirs() }
-        return File(savesDir, "$baseName.sav").absolutePath
+        val savesDir = java.io.File(filesDir, "saves").apply { mkdirs() }
+        return java.io.File(savesDir, "$baseName.sav").absolutePath
     }
 
     private fun queryDisplayName(uri: Uri): String? {
-        var cursor: Cursor? = null
+        var cursor: android.database.Cursor? = null
         try {
-            cursor = contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+            cursor = contentResolver.query(
+                uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null
+            )
             if (cursor != null && cursor.moveToFirst()) {
-                val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                val idx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
                 if (idx >= 0) return cursor.getString(idx)
             }
-        } catch (e: Exception) {
-            // fall through to hash-based naming
+        } catch (_: Exception) {
         } finally {
             cursor?.close()
         }
         return null
+    }
+
+    private fun applyOrientation() {
+        requestedOrientation = when (AppPrefs.getOrientation(this)) {
+            "reverse_landscape" -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+            "portrait"          -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            "auto"              -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
+            "system"            -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            else                -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
     }
 
     override fun onPause() {

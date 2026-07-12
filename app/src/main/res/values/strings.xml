@@ -2,11 +2,58 @@
 <resources>
     <string name="app_name">mGBA Link</string>
     <string name="load_rom">Load ROM</string>
-    <string name="dolphin_link">Dolphin Link</string>
+    <string name="dolphin_link">Dolphin</string>
     <string name="dolphin_connect">Connect</string>
     <string name="dolphin_disconnect">Disconnect</string>
     <string name="dolphin_ip_hint">Dolphin host IP (e.g. 192.168.1.20)</string>
     <string name="dolphin_status_connected">Connected to Dolphin</string>
     <string name="dolphin_status_disconnected">Not connected</string>
     <string name="dolphin_status_failed">Could not connect — check the IP and that Dolphin is waiting for a GBA link</string>
+
+    <!-- Folder setup -->
+    <string name="setup_title">Welcome to mGBA Link</string>
+    <string name="setup_subtitle">Choose the folder where your GBA ROM files are stored.\nSave files are managed automatically.</string>
+    <string name="setup_rom_folder_label">ROM FOLDER</string>
+    <string name="setup_no_folder">No folder selected</string>
+    <string name="setup_pick_rom_folder">Browse…</string>
+    <string name="setup_done">Done</string>
+
+    <!-- Library -->
+    <string name="library_no_games">No .gba files found in this folder</string>
+    <string name="library_folder_unreadable">Could not read the ROM folder — tap Change Folder to pick a new one</string>
+    <string name="library_tap_folder">Tap Change Folder to choose your ROMs directory</string>
+    <string name="library_change_folder">Change Folder</string>
+    <string name="library_settings">Settings</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_video">VIDEO</string>
+    <string name="settings_stretch">Stretch to fit screen</string>
+    <string name="settings_stretch_desc">Always fill the full screen in landscape mode</string>
+    <string name="settings_orientation">Screen orientation</string>
+    <string name="settings_frame_skip">Max frame skip</string>
+    <string name="settings_section_audio">AUDIO</string>
+    <string name="settings_sound_enabled">Enable sound</string>
+    <string name="settings_sound_freq">Sound frequency</string>
+    <string name="settings_section_layouts">LAYOUTS</string>
+    <string name="settings_layout_hint">Choose the virtual gamepad layout. Takes effect the next time you launch a game.</string>
+
+    <!-- Orientation choices -->
+    <string name="orient_landscape">Landscape</string>
+    <string name="orient_reverse_landscape">Reverse landscape</string>
+    <string name="orient_portrait">Portrait</string>
+    <string name="orient_auto">Auto rotate</string>
+    <string name="orient_system">System default</string>
+
+    <!-- Frequency choices -->
+    <string name="freq_44100">44100 Hz (best quality)</string>
+    <string name="freq_22050">22050 Hz</string>
+    <string name="freq_11025">11025 Hz (lowest CPU use)</string>
+
+    <!-- Layout choices -->
+    <string name="layout_default">Default (D-pad left, buttons right)</string>
+    <string name="layout_left_handed">Left-handed (D-pad right, buttons left)</string>
+
+    <!-- Emulator screen -->
+    <string name="emu_back_to_library">Library</string>
 </resources>

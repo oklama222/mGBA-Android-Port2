@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
+
+    <!-- GBA cartridge icon dot -->
+    <View
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:background="@drawable/dot_game"
+        android:layout_marginEnd="16dp" />
+
+    <TextView
+        android:id="@+id/tvGameName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#eeeeee"
+        android:textSize="16sp" />
+
+    <!-- Arrow hint -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="▶"
+        android:textColor="#444466"
+        android:textSize="14sp" />
+
+</LinearLayout>

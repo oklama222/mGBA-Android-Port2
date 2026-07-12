@@ -9,17 +9,22 @@ import android.util.AttributeSet
 import android.view.View
 
 /**
- * Holds the current frame as a Bitmap and draws it scaled up with nearest-
- * neighbor filtering (crisp pixels rather than a blurry smoothed image —
- * the traditional look for scaled-up retro console output).
+ * Holds the current frame as a Bitmap and draws it to the screen.
  *
- * The native side writes directly into [frameBitmap]'s pixel memory each
- * frame (see nativeRunFrameAndRender); this view's only job is to blit that
- * bitmap to the screen, scaled and centered.
+ * Two rendering modes controlled by [stretchToFit]:
+ *  - false (default): aspect-fit, integer-scaled when possible — crisp pixels, black bars.
+ *  - true: stretch to fill the full view, ignoring the GBA's native 3:2 ratio.
  */
 class EmulatorView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     constructor(context: Context) : this(context, null)
+
+    /** When true, the frame is stretched to fill the whole screen. */
+    var stretchToFit: Boolean = true
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     var frameBitmap: Bitmap? = null
         private set
@@ -32,19 +37,15 @@ class EmulatorView(context: Context, attrs: AttributeSet?) : View(context, attrs
 
     fun ensureBitmap(width: Int, height: Int): Bitmap {
         val existing = frameBitmap
-        if (existing != null && existing.width == width && existing.height == height) {
-            return existing
-        }
+        if (existing != null && existing.width == width && existing.height == height) return existing
         val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        bmp.setHasAlpha(false) // the core doesn't meaningfully set alpha; treat as always-opaque
+        bmp.setHasAlpha(false)
         frameBitmap = bmp
         return bmp
     }
 
     /** Call after nativeRunFrameAndRender() has written into the bitmap. */
-    fun onFrameRendered() {
-        postInvalidateOnAnimation()
-    }
+    fun onFrameRendered() = postInvalidateOnAnimation()
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -52,19 +53,25 @@ class EmulatorView(context: Context, attrs: AttributeSet?) : View(context, attrs
 
         val viewW = width.toFloat()
         val viewH = height.toFloat()
-        val bmpW = bmp.width.toFloat()
-        val bmpH = bmp.height.toFloat()
         if (viewW <= 0 || viewH <= 0) return
 
-        // Aspect-fit, integer-scaled when possible for the crispest result.
-        val scale = minOf(viewW / bmpW, viewH / bmpH)
-        val drawW = bmpW * scale
-        val drawH = bmpH * scale
-        val left = ((viewW - drawW) / 2f).toInt()
-        val top = ((viewH - drawH) / 2f).toInt()
-        destRect.set(left, top, left + drawW.toInt(), top + drawH.toInt())
-
         canvas.drawColor(android.graphics.Color.BLACK)
+
+        if (stretchToFit) {
+            // Fill the entire view.
+            destRect.set(0, 0, width, height)
+        } else {
+            // Aspect-fit, integer-scaled when possible.
+            val bmpW = bmp.width.toFloat()
+            val bmpH = bmp.height.toFloat()
+            val scale = minOf(viewW / bmpW, viewH / bmpH)
+            val drawW = bmpW * scale
+            val drawH = bmpH * scale
+            val left = ((viewW - drawW) / 2f).toInt()
+            val top  = ((viewH - drawH) / 2f).toInt()
+            destRect.set(left, top, left + drawW.toInt(), top + drawH.toInt())
+        }
+
         canvas.drawBitmap(bmp, null, destRect, paint)
     }
 }

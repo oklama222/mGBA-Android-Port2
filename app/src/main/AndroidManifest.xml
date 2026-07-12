@@ -10,15 +10,35 @@
         android:theme="@style/Theme.AppCompat.NoActionBar"
         android:supportsRtl="true">
 
+        <!-- Home screen: the game library -->
         <activity
-            android:name=".MainActivity"
+            android:name=".LibraryActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:screenOrientation="landscape">
+            android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- First-launch folder picker -->
+        <activity
+            android:name=".FolderSetupActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <!-- Settings -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <!-- Emulator — orientation is set programmatically from Settings -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
     </application>
 </manifest>
