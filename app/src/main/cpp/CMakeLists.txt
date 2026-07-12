@@ -50,13 +50,6 @@ set(USE_ELF OFF CACHE BOOL "" FORCE)
 set(BUILD_QT OFF CACHE BOOL "" FORCE)
 set(BUILD_SDL OFF CACHE BOOL "" FORCE)
 
-# mGBA's CMakeLists.txt unconditionally calls include(CPack) at the bottom.
-# CPack requires these two files to exist or it errors out at configure time.
-# Point them at real files from the mGBA source tree so the check passes.
-# (We're not actually building packages — this is just to satisfy CPack's guards.)
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${MGBA_ROOT}/README.md")
-set(CPACK_RESOURCE_FILE_LICENSE    "${MGBA_ROOT}/LICENSE")
-
 # Pulling this in with EXCLUDE_FROM_ALL is what makes mGBA's own CMakeLists.txt
 # take the "LIBMGBA_ONLY" path (it detects this via get_directory_property),
 # skipping frontends/tools/tests and building just the core.
