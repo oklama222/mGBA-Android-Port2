@@ -9,6 +9,9 @@ android {
     // If Android Studio nags you to bump to 36, that's fine to do — just bump both numbers below.
     compileSdk = 35
 
+    // Pin to the NDK we install in CI (and the one Android Studio will prompt you to install).
+    ndkVersion = "27.2.12479018"
+
     defaultConfig {
         applicationId = "com.example.mgbalink"
         minSdk = 24
@@ -20,7 +23,6 @@ android {
         // the last ~7 years actually uses. Add more ABIs back once this one compiles cleanly.
         ndk {
             abiFilters += listOf("arm64-v8a")
-            version = "27.2.12479018"
         }
 
         externalNativeBuild {
