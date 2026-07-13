@@ -59,7 +59,21 @@
     <!-- Layout choices -->
     <string name="layout_default">Default (D-pad left, buttons right)</string>
     <string name="layout_left_handed">Left-handed (D-pad right, buttons left)</string>
+    <!-- layout_custom and settings_edit_layout are below in the Emulator screen section -->
 
     <!-- Emulator screen -->
-    <string name="emu_back_to_library">Library</string>
+    <string name="emu_menu">⋮ Menu</string>
+    <string name="emu_back_to_library">Back to Library</string>
+
+    <!-- Layout editor -->
+    <string name="editor_title">Edit Layout</string>
+    <string name="editor_back">← Done</string>
+    <string name="editor_reset">Reset</string>
+
+    <!-- Layout choices (updated) -->
+    <string name="layout_custom">Custom (use my positions)</string>
+    <string name="settings_edit_layout">Edit button positions…</string>
+
+    <!-- Misc -->
+    <string name="back_arrow">←</string>
 </resources>

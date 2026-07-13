@@ -25,7 +25,7 @@ object AppPrefs {
 
     private fun prefs(ctx: Context) = ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE)
 
-    // ── ROM folder ──────────────────────────────────────────────────────────
+    // ── ROM / Save folders ───────────────────────────────────────────────────
     fun getRomFolderUri(ctx: Context): Uri? =
         prefs(ctx).getString(KEY_ROM_FOLDER, null)?.let { Uri.parse(it) }
 
@@ -62,7 +62,38 @@ object AppPrefs {
     fun setSoundFreq(ctx: Context, v: Int)   = prefs(ctx).edit().putInt(KEY_SOUND_FREQ, v).apply()
 
     // ── Layout ───────────────────────────────────────────────────────────────
-    /** Values: "default", "left_handed" */
+    /** Values: "default", "left_handed", "custom" */
     fun getLayout(ctx: Context)          = prefs(ctx).getString(KEY_LAYOUT, "default") ?: "default"
     fun setLayout(ctx: Context, v: String)   = prefs(ctx).edit().putString(KEY_LAYOUT, v).apply()
+
+    // ── Custom button positions (normalized 0..1 coords) ────────────────────
+    // Key is one of: "dpad", "a", "b", "l", "r", "start", "select"
+    // -1f means "no custom position stored — use the computed default".
+
+    fun getButtonCenterX(ctx: Context, key: String, default: Float): Float =
+        prefs(ctx).getFloat("btn_${key}_x", default)
+
+    fun getButtonCenterY(ctx: Context, key: String, default: Float): Float =
+        prefs(ctx).getFloat("btn_${key}_y", default)
+
+    fun setButtonCenter(ctx: Context, key: String, normX: Float, normY: Float) {
+        prefs(ctx).edit()
+            .putFloat("btn_${key}_x", normX)
+            .putFloat("btn_${key}_y", normY)
+            .apply()
+    }
+
+    fun resetButtonPositions(ctx: Context) {
+        val edit = prefs(ctx).edit()
+        listOf("dpad", "a", "b", "l", "r", "start", "select").forEach { k ->
+            edit.remove("btn_${k}_x").remove("btn_${k}_y")
+        }
+        edit.apply()
+    }
+
+    /** True when the user has saved at least one custom button position. */
+    fun hasCustomPositions(ctx: Context): Boolean =
+        listOf("dpad", "a", "b", "l", "r", "start", "select").any { k ->
+            prefs(ctx).contains("btn_${k}_x")
+        }
 }

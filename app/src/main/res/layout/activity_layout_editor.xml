@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#111122">
+
+    <!-- The drag canvas fills the whole screen -->
+    <com.example.mgbalink.LayoutEditorView
+        android:id="@+id/layoutEditorView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Thin header row at the top -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:orientation="horizontal"
+        android:background="#cc111122"
+        android:padding="6dp"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btnEditorBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/editor_back"
+            android:backgroundTint="#2a2a3e"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/editor_title"
+            android:textColor="#cccccc"
+            android:textSize="15sp"
+            android:gravity="center" />
+
+        <Button
+            android:id="@+id/btnResetLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/editor_reset"
+            android:backgroundTint="#2a2a3e"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+</FrameLayout>

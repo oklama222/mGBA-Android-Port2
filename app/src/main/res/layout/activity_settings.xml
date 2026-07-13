@@ -1,232 +1,269 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1a1a2e">
+    android:background="#1a1a2e"
+    android:orientation="vertical">
 
+    <!-- Manual header (no action bar) -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="56dp"
+        android:background="#12122a"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="16dp">
 
-        <!-- ── Section 1: Video ─────────────────────────────────────── -->
-        <TextView
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/btnSettingsBack"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/settings_section_video"
-            android:textColor="#4a90d9"
-            android:textSize="13sp"
+            android:text="@string/back_arrow"
+            android:backgroundTint="#2a2a3e"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/settings_title"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
             android:textStyle="bold"
-            android:letterSpacing="0.1"
-            android:paddingTop="8dp"
-            android:paddingBottom="4dp" />
+            android:gravity="center" />
 
-        <View android:layout_width="match_parent" android:layout_height="1dp"
-            android:background="#2a2a3e" android:layout_marginBottom="12dp" />
+        <!-- Spacer to balance the back button -->
+        <View android:layout_width="72dp" android:layout_height="1dp" />
+    </LinearLayout>
 
-        <!-- Stretch to fit toggle -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingTop="4dp"
-            android:paddingBottom="12dp">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <LinearLayout
-                android:layout_width="0dp"
+            <!-- ── Section 1: Video ──────────────────────────────────── -->
+            <TextView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:text="@string/settings_section_video"
+                android:textColor="#4a90d9"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:paddingTop="8dp"
+                android:paddingBottom="4dp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="#2a2a3e" android:layout_marginBottom="12dp" />
+
+            <!-- Stretch to fit -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_stretch"
-                    android:textColor="#ffffff"
-                    android:textSize="15sp" />
-                <TextView
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_stretch"
+                        android:textColor="#ffffff"
+                        android:textSize="15sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_stretch_desc"
+                        android:textColor="#888888"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <Switch
+                    android:id="@+id/switchStretch"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_stretch_desc"
-                    android:textColor="#888888"
-                    android:textSize="12sp" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
-            <Switch
-                android:id="@+id/switchStretch"
+            <!-- Screen orientation -->
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <!-- Screen orientation -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_orientation"
-            android:textColor="#ffffff"
-            android:textSize="15sp"
-            android:layout_marginBottom="8dp" />
-
-        <RadioGroup
-            android:id="@+id/rgOrientation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
-
-            <RadioButton android:id="@+id/radioOrientLandscape"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/orient_landscape" android:textColor="#cccccc" />
-            <RadioButton android:id="@+id/radioOrientReverseLandscape"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/orient_reverse_landscape" android:textColor="#cccccc" />
-            <RadioButton android:id="@+id/radioOrientPortrait"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/orient_portrait" android:textColor="#cccccc" />
-            <RadioButton android:id="@+id/radioOrientAuto"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/orient_auto" android:textColor="#cccccc" />
-            <RadioButton android:id="@+id/radioOrientSystem"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/orient_system" android:textColor="#cccccc" />
-        </RadioGroup>
-
-        <!-- Max frame skip -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginBottom="4dp">
-
-            <TextView
-                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/settings_frame_skip"
+                android:text="@string/settings_orientation"
                 android:textColor="#ffffff"
-                android:textSize="15sp" />
-
-            <TextView
-                android:id="@+id/tvFrameSkipValue"
-                android:layout_width="32dp"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textColor="#4a90d9"
                 android:textSize="15sp"
-                android:gravity="end" />
-        </LinearLayout>
+                android:layout_marginBottom="8dp" />
 
-        <SeekBar
-            android:id="@+id/seekFrameSkip"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="10"
-            android:layout_marginBottom="24dp" />
+            <RadioGroup
+                android:id="@+id/rgOrientation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
 
-        <!-- ── Section 2: Audio ─────────────────────────────────────── -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_section_audio"
-            android:textColor="#4a90d9"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.1"
-            android:paddingBottom="4dp" />
+                <RadioButton android:id="@+id/radioOrientLandscape"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/orient_landscape" android:textColor="#cccccc" />
+                <RadioButton android:id="@+id/radioOrientReverseLandscape"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/orient_reverse_landscape" android:textColor="#cccccc" />
+                <RadioButton android:id="@+id/radioOrientPortrait"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/orient_portrait" android:textColor="#cccccc" />
+                <RadioButton android:id="@+id/radioOrientAuto"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/orient_auto" android:textColor="#cccccc" />
+                <RadioButton android:id="@+id/radioOrientSystem"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/orient_system" android:textColor="#cccccc" />
+            </RadioGroup>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp"
-            android:background="#2a2a3e" android:layout_marginBottom="12dp" />
+            <!-- Max frame skip -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="4dp">
 
-        <!-- Enable sound -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settings_frame_skip"
+                    android:textColor="#ffffff"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/tvFrameSkipValue"
+                    android:layout_width="32dp"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#4a90d9"
+                    android:textSize="15sp"
+                    android:gravity="end" />
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekFrameSkip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="10"
+                android:layout_marginBottom="24dp" />
+
+            <!-- ── Section 2: Audio ──────────────────────────────────── -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_section_audio"
+                android:textColor="#4a90d9"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:paddingBottom="4dp" />
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="#2a2a3e" android:layout_marginBottom="12dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settings_sound_enabled"
+                    android:textColor="#ffffff"
+                    android:textSize="15sp" />
+
+                <Switch
+                    android:id="@+id/switchSound"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
 
             <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/settings_sound_enabled"
-                android:textColor="#ffffff"
-                android:textSize="15sp" />
-
-            <Switch
-                android:id="@+id/switchSound"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="@string/settings_sound_freq"
+                android:textColor="#ffffff"
+                android:textSize="15sp"
+                android:layout_marginBottom="8dp" />
+
+            <RadioGroup
+                android:id="@+id/rgSoundFreq"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <RadioButton android:id="@+id/radioFreq44100"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/freq_44100" android:textColor="#cccccc" />
+                <RadioButton android:id="@+id/radioFreq22050"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/freq_22050" android:textColor="#cccccc" />
+                <RadioButton android:id="@+id/radioFreq11025"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/freq_11025" android:textColor="#cccccc" />
+            </RadioGroup>
+
+            <!-- ── Section 3: Layouts ────────────────────────────────── -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_section_layouts"
+                android:textColor="#4a90d9"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:paddingBottom="4dp" />
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="#2a2a3e" android:layout_marginBottom="12dp" />
+
+            <RadioGroup
+                android:id="@+id/rgLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="12dp">
+
+                <RadioButton android:id="@+id/radioLayoutDefault"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/layout_default" android:textColor="#cccccc" />
+                <RadioButton android:id="@+id/radioLayoutLeftHanded"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/layout_left_handed" android:textColor="#cccccc" />
+                <RadioButton android:id="@+id/radioLayoutCustom"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/layout_custom" android:textColor="#cccccc" />
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/btnEditLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_edit_layout"
+                android:backgroundTint="#2a2a3e"
+                android:layout_marginBottom="32dp" />
+
         </LinearLayout>
-
-        <!-- Sound frequency -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_sound_freq"
-            android:textColor="#ffffff"
-            android:textSize="15sp"
-            android:layout_marginBottom="8dp" />
-
-        <RadioGroup
-            android:id="@+id/rgSoundFreq"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="24dp">
-
-            <RadioButton android:id="@+id/radioFreq44100"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/freq_44100" android:textColor="#cccccc" />
-            <RadioButton android:id="@+id/radioFreq22050"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/freq_22050" android:textColor="#cccccc" />
-            <RadioButton android:id="@+id/radioFreq11025"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/freq_11025" android:textColor="#cccccc" />
-        </RadioGroup>
-
-        <!-- ── Section 3: Layouts ───────────────────────────────────── -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_section_layouts"
-            android:textColor="#4a90d9"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.1"
-            android:paddingBottom="4dp" />
-
-        <View android:layout_width="match_parent" android:layout_height="1dp"
-            android:background="#2a2a3e" android:layout_marginBottom="12dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_layout_hint"
-            android:textColor="#888888"
-            android:textSize="12sp"
-            android:layout_marginBottom="12dp" />
-
-        <RadioGroup
-            android:id="@+id/rgLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="32dp">
-
-            <RadioButton android:id="@+id/radioLayoutDefault"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/layout_default"
-                android:textColor="#cccccc" />
-            <RadioButton android:id="@+id/radioLayoutLeftHanded"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="@string/layout_left_handed"
-                android:textColor="#cccccc" />
-        </RadioGroup>
-
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</LinearLayout>
