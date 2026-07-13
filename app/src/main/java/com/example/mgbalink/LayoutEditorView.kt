@@ -88,7 +88,7 @@ class LayoutEditorView(context: Context, attrs: AttributeSet?) : View(context, a
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
         textAlign = Paint.Align.CENTER
-        textStyle = Paint.Style.Bold
+        typeface = android.graphics.Typeface.DEFAULT_BOLD
     }
     private val hintPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.argb(120, 200, 200, 200)
@@ -207,7 +207,3 @@ class LayoutEditorView(context: Context, attrs: AttributeSet?) : View(context, a
     }
 }
 
-// Suppress lint — we're doing this intentionally.
-private var Paint.textStyle: Paint.Style
-    get() = style
-    set(_) {}
