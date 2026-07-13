@@ -4,11 +4,17 @@
     <string name="load_rom">Load ROM</string>
     <string name="dolphin_link">Dolphin</string>
     <string name="dolphin_connect">Connect</string>
+    <string name="dolphin_connecting">Connecting…</string>
     <string name="dolphin_disconnect">Disconnect</string>
     <string name="dolphin_ip_hint">Dolphin host IP (e.g. 192.168.1.20)</string>
-    <string name="dolphin_status_connected">Connected to Dolphin</string>
+    <string name="dolphin_ip_label">Host IP</string>
+    <string name="dolphin_data_port_label">Data port (default 54970)</string>
+    <string name="dolphin_clock_port_label">Clock port (default 49420)</string>
+    <string name="dolphin_status_label">Status: </string>
+    <string name="dolphin_status_connected">Connected ✓</string>
     <string name="dolphin_status_disconnected">Not connected</string>
     <string name="dolphin_status_failed">Could not connect — check the IP and that Dolphin is waiting for a GBA link</string>
+    <string name="dolphin_connect_failed">Connection failed — is Dolphin running with GBA link enabled?</string>
 
     <!-- Folder setup -->
     <string name="setup_title">Welcome to mGBA Link</string>

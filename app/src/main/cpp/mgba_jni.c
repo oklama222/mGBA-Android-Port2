@@ -15,7 +15,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <arpa/inet.h>
 
 #include <android/log.h>
 #include <android/bitmap.h>
@@ -306,38 +305,82 @@ Java_com_example_mgbalink_NativeBridge_nativeRenderAudio(JNIEnv* env, jclass cla
 // ---------------------------------------------------------------------------
 // Dolphin link — same three calls Qt's DolphinConnector/CoreController make.
 // dataPort/clockPort of 0 means "use the defaults" (54970 / 49420).
+//
+// Two bugs fixed vs the naive implementation:
+//
+//  1. Byte-order: inet_pton stores the IPv4 address in NETWORK byte order,
+//     but SocketConnectTCP does htonl(address->ipv4) expecting HOST byte
+//     order — so passing an inet_pton result directly reverses the octets
+//     (127.0.0.1 becomes 1.0.0.127).  SocketResolveHost stores host order,
+//     matching what SocketConnectTCP wants.
+//
+//  2. Mutex deadlock: GBASIODolphinConnect calls SocketConnectTCP which
+//     calls the blocking connect() syscall.  If Dolphin isn't reachable
+//     this can block for up to ~20 s (OS TCP connect timeout), during which
+//     the emulator frame loop (which also needs g_coreMutex) is completely
+//     frozen.  We split the operation: hold the mutex only for the fast
+//     driver-detach and driver-install steps; release it around the slow
+//     TCP connect so frames keep rendering normally.
 // ---------------------------------------------------------------------------
 JNIEXPORT jboolean JNICALL
 Java_com_example_mgbalink_NativeBridge_nativeDolphinConnect(JNIEnv* env, jclass clazz,
                                                              jstring ip, jint dataPort,
                                                              jint clockPort) {
     (void) clazz;
+
+    // --- Step 1: resolve address (may call getaddrinfo) — no mutex needed ---
+    const char* ipUtf8 = (*env)->GetStringUTFChars(env, ip, NULL);
+    struct Address address;
+    int resolveErr = SocketResolveHost(ipUtf8, &address);
+    (*env)->ReleaseStringUTFChars(env, ip, ipUtf8);
+    if (resolveErr) {
+        LOGE("SocketResolveHost failed: %d", resolveErr);
+        return JNI_FALSE;
+    }
+
+    // --- Step 2: lock briefly to detach any existing connection, then
+    //     reset the dolphin struct so the emulator won't touch it while
+    //     we're in the slow TCP connect below. ---
     pthread_mutex_lock(&g_coreMutex);
     if (!g_core || !g_dolphinCreated) {
         pthread_mutex_unlock(&g_coreMutex);
         return JNI_FALSE;
     }
+    if (g_dolphinAttached) {
+        struct GBA* gba = (struct GBA*) g_core->board;
+        GBASIOSetDriver(&gba->sio, NULL, SIO_JOYBUS);
+        g_dolphinAttached = false;
+    }
+    // Destroy (closes any open sockets) and re-create (resets fn-ptrs and
+    // sets sockets to INVALID_SOCKET) so the struct is clean for the connect.
+    GBASIODolphinDestroy(&g_dolphin);
+    GBASIODolphinCreate(&g_dolphin);
+    pthread_mutex_unlock(&g_coreMutex);
 
-    const char* ipUtf8 = (*env)->GetStringUTFChars(env, ip, NULL);
-    struct Address address;
-    address.version = IPV4;
-    bool parsed = inet_pton(AF_INET, ipUtf8, &address.ipv4) == 1;
-    (*env)->ReleaseStringUTFChars(env, ip, ipUtf8);
-
-    if (!parsed) {
-        pthread_mutex_unlock(&g_coreMutex);
+    // --- Step 3: open TCP sockets — blocking, NO mutex ---
+    // GBASIODolphinConnect substitutes the default ports when 0 is passed.
+    bool ok = GBASIODolphinConnect(&g_dolphin, &address,
+                                   (short) dataPort, (short) clockPort);
+    if (!ok) {
+        LOGE("GBASIODolphinConnect failed (Dolphin not running or wrong IP?)");
         return JNI_FALSE;
     }
 
-    bool ok = GBASIODolphinConnect(&g_dolphin, &address, (short) dataPort, (short) clockPort);
-    if (ok) {
-        struct GBA* gba = (struct GBA*) g_core->board;
-        GBASIOSetDriver(&gba->sio, &g_dolphin.d, SIO_JOYBUS);
-        g_dolphinAttached = true;
+    // --- Step 4: lock again to install the SIO driver ---
+    // Re-check g_core: it might have been unloaded while we were connecting.
+    pthread_mutex_lock(&g_coreMutex);
+    if (!g_core || !g_dolphinCreated) {
+        // Core gone — drop the sockets we just opened.
+        GBASIODolphinDestroy(&g_dolphin);
+        GBASIODolphinCreate(&g_dolphin);
+        pthread_mutex_unlock(&g_coreMutex);
+        return JNI_FALSE;
     }
-
+    struct GBA* gba = (struct GBA*) g_core->board;
+    GBASIOSetDriver(&gba->sio, &g_dolphin.d, SIO_JOYBUS);
+    g_dolphinAttached = true;
     pthread_mutex_unlock(&g_coreMutex);
-    return ok ? JNI_TRUE : JNI_FALSE;
+    return JNI_TRUE;
 }
 
 JNIEXPORT void JNICALL

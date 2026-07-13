@@ -26,8 +26,9 @@ object NativeBridge {
     const val KEY_R = 8
     const val KEY_L = 9
 
-    const val DOLPHIN_DATA_PORT_DEFAULT = 0 // 0 == "use mGBA's default" (54970)
-    const val DOLPHIN_CLOCK_PORT_DEFAULT = 0 // 0 == "use mGBA's default" (49420)
+    // Port constants matching dolphin.c — used as defaults in the dialog.
+    const val DOLPHIN_DATA_PORT  = 54970
+    const val DOLPHIN_CLOCK_PORT = 49420
 
     @JvmStatic external fun nativeLoadRom(romBytes: ByteArray, savePath: String): Boolean
     @JvmStatic external fun nativeUnloadRom()
