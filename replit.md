@@ -48,6 +48,21 @@ See **BUILD_GUIDE.md** for the full step-by-step guide.
 3. Install NDK 27.x and CMake 3.22.1+ via SDK Manager if prompted
 4. Build → Build APK(s) → find the APK at `app/build/outputs/apk/debug/app-debug.apk`
 
+## Code review notes (July 2026)
+
+Two bugs were found and fixed in `app/src/main/cpp/mgba_jni.c`:
+
+1. **Pixel channel swap** (`nativeRunFrameAndRender`): mGBA's native format is ABGR
+   (R in low byte), but Android `ARGB_8888` needs ARGB (R in high byte). A direct
+   `memcpy` produced red/blue-swapped colors. Fixed with a per-pixel R↔B swap loop.
+
+2. **`blip_set_rates` called per audio frame** (`nativeRenderAudio`): This resets the
+   resampler's state each call, corrupting buffered audio. Moved to ROM load time in
+   `nativeLoadRom`.
+
+No compile errors were found — all headers are present, API signatures match, CMake
+paths are correct, and JNI function names align with Kotlin declarations.
+
 ## User preferences
 
 _None recorded yet._

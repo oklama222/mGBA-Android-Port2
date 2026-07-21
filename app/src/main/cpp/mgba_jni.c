@@ -177,6 +177,13 @@ Java_com_example_mgbalink_NativeBridge_nativeLoadRom(JNIEnv* env, jclass clazz,
     g_dolphinCreated = true;
     g_dolphinAttached = false;
 
+    // Set audio resampler rates once here, at ROM load time. blip_set_rates
+    // resets the resampler's internal state — calling it every frame (inside
+    // nativeRenderAudio) destroys buffered samples and corrupts audio output.
+    int32_t clockRate = core->frequency(core);
+    blip_set_rates(core->getAudioChannel(core, 0), clockRate, AUDIO_SAMPLE_RATE);
+    blip_set_rates(core->getAudioChannel(core, 1), clockRate, AUDIO_SAMPLE_RATE);
+
     g_core = core;
     g_videoBuffer = videoBuffer;
     g_width = width;
@@ -213,12 +220,12 @@ Java_com_example_mgbalink_NativeBridge_nativeGetSampleRate(JNIEnv* env, jclass c
 }
 
 // ---------------------------------------------------------------------------
-// Runs exactly one video frame and blits it straight into the given Bitmap's
-// native pixel memory (which must be ARGB_8888 and g_width x g_height).
-// mGBA's 32-bit color_t layout (R in bits 0-7, G 8-15, B 16-23, A 24-31 — see
-// include/mgba/core/interface.h) is byte-identical to Android's ARGB_8888
-// buffer layout on a little-endian device, so this is a straight memcpy, no
-// per-pixel conversion.
+// Runs exactly one video frame and converts it into the given Bitmap's native
+// pixel memory (which must be ARGB_8888 and g_width x g_height).
+// mGBA's 32-bit color_t is M_RGB5_TO_BGR8 format: R in bits 0-7, G 8-15,
+// B 16-23, A=0 in 24-31 (i.e. 0x00BBGGRR).  Android ARGB_8888 expects the
+// inverse: B in bits 0-7, G 8-15, R 16-23, A 24-31 (i.e. 0xAARRGGBB).
+// A per-pixel R↔B swap is therefore required; see the loop below.
 // ---------------------------------------------------------------------------
 JNIEXPORT void JNICALL
 Java_com_example_mgbalink_NativeBridge_nativeRunFrameAndRender(JNIEnv* env, jclass clazz,
@@ -234,7 +241,22 @@ Java_com_example_mgbalink_NativeBridge_nativeRunFrameAndRender(JNIEnv* env, jcla
 
     void* pixels = NULL;
     if (AndroidBitmap_lockPixels(env, bitmap, &pixels) == ANDROID_BITMAP_RESULT_SUCCESS && pixels) {
-        memcpy(pixels, g_videoBuffer, (size_t) g_width * g_height * sizeof(color_t));
+        // mGBA's native 32-bit format (M_RGB5_TO_BGR8) stores pixels as:
+        //   bits  0– 7: R,  bits  8–15: G,  bits 16–23: B,  bits 24–31: 0
+        // Android ARGB_8888 expects:
+        //   bits  0– 7: B,  bits  8–15: G,  bits 16–23: R,  bits 24–31: A
+        // A straight memcpy would swap red and blue. Swap R↔B per pixel here.
+        // At 240×160 = 38 400 pixels this loop is negligible.
+        const uint32_t* src = (const uint32_t*) g_videoBuffer;
+        uint32_t*       dst = (uint32_t*) pixels;
+        const size_t n = (size_t) g_width * g_height;
+        for (size_t i = 0; i < n; ++i) {
+            uint32_t px = src[i]; // 0x00BBGGRR (mGBA native)
+            dst[i] = 0xFF000000u                    // alpha = opaque
+                   | ((px & 0x00FF0000u) >> 16)     // B → bits  0– 7
+                   | (px  & 0x0000FF00u)             // G stays bits  8–15
+                   | ((px & 0x000000FFu) << 16);    // R → bits 16–23
+        }
         AndroidBitmap_unlockPixels(env, bitmap);
     }
 
@@ -277,12 +299,10 @@ Java_com_example_mgbalink_NativeBridge_nativeRenderAudio(JNIEnv* env, jclass cla
     }
 
     jsize capacity = (*env)->GetArrayLength(env, outBuffer) / 2; // stereo frames
-    blip_t* left = g_core->getAudioChannel(g_core, 0);
+    blip_t* left  = g_core->getAudioChannel(g_core, 0);
     blip_t* right = g_core->getAudioChannel(g_core, 1);
-    int32_t clockRate = g_core->frequency(g_core);
-
-    blip_set_rates(left, clockRate, AUDIO_SAMPLE_RATE);
-    blip_set_rates(right, clockRate, AUDIO_SAMPLE_RATE);
+    // Rates are set once at ROM load time (nativeLoadRom); do not call
+    // blip_set_rates here — doing so resets the resampler each frame.
 
     int available = blip_samples_avail(left);
     if (available > capacity) {
